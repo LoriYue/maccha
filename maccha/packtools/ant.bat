@@ -1,0 +1,1 @@
+java -classpath ../hbmtools/lib/ant/ant-launcher.jar;../hbmtools/lib/ant/ant.jar org.apache.tools.ant.Main %1

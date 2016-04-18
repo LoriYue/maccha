@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build">
+	<!-- 属性定义  -->
+	<!--设计时需要的辅助设计类库：
+                    hibernate3_tools   hibernate3设计时工具类库
+                    ant                ant工具类库
+    -->
+	<property name="lib.hibernate3_tools" location="lib/hibernate3_tools" />
+	<property name="lib.jdbc" location="lib/jdbc" />
+	<!--代码目录-->
+	<property name="src.business_object" location="../src" />
+	<!--配置文件目录-->
+	<property name="conf" location="../config/common_config/hbm_config"/>
+	<!--定义类路径-->
+	<path id="hibernate_classpath">
+		<fileset dir="${lib.hibernate3_tools}">
+			<include name="*.jar" />
+		</fileset>
+		
+		<fileset dir="${lib.jdbc}">
+			<include name="*.jar" />
+		</fileset>
+		
+		<pathelement location="${conf}" />
+	</path>
+	
+	<!-- hbm文件生产java代码-->
+	<target name="hbm2java">
+	<taskdef name="hibernatetool"  classname="org.hibernate.tool.ant.HibernateToolTask" classpathref="hibernate_classpath" />
+		<hibernatetool  destdir="${src.business_object}">
+			<configuration  configurationfile="hibernate.cfg.xml"/>
+			<hbm2java generics="false"  ejb3="false" />
+		</hibernatetool>
+	</target>
+	
+	<!-- hbm文件同步数据结构-->
+	<target name="hbm2ddl">
+		<taskdef name="hibernatetool" classname="org.hibernate.tool.ant.HibernateToolTask" classpathref="hibernate_classpath" />
+		<hibernatetool destdir="${src.business_object}">
+			<configuration configurationfile="hibernate.cfg.xml">
+			</configuration>
+			<hbm2ddl drop="false"/>
+		</hibernatetool>
+	</target>
+</project>

@@ -1,0 +1,148 @@
+<project name="techframe" basedir="." default="build.techframe">
+	
+	<description>simpro packtools</description>
+	
+	<!--
+	
+	工作流程说明：
+	
+	1.设置环境变量【build.properties】
+	      |
+	2.设置类库环境【classpath】
+	      |
+	3.清理/准备打包环境【clean】
+	      |
+	4.编译技术组件【complile.techframe】->打包技术组件【build.techframe】
+	
+	-->
+	<property file="build.properties"/>
+	<!-- 设置类库环境-->
+	<path id="classpath">
+		<fileset dir="${lib.3party.jar}" includes="*.jar" />
+		<fileset dir="${lib.j2ee.jar}"   includes="*.jar"/>
+		<pathelement path="${src.home}" />
+	</path>
+	
+	<!-- 清理/准备打包环境 -->
+	<target name="clean" description="clean all">
+		<delete dir="build" />
+		<!--创建输出目录-->
+		<mkdir dir="build/classes"/>
+		<mkdir dir="build/lib"/>
+	</target>
+	
+	
+	<!-- 编译技术组件 -->
+	<target name="compile.techframe" depends="clean" description="compile techframe">
+		<javac srcdir="${src.home}/org/simpro" encoding="utf-8" destdir="build/classes" source="1.5" target="1.5"  debug="on" fork="yes">
+			<classpath refid="classpath"/>
+		</javac>	
+	</target>
+	
+    <!--打包技术组件-->
+	<target name="build.techframe" depends="compile.techframe" description="build techframe jar">
+
+		<!--
+	  	1.基础部分 util exception 文件收集
+	  	-->
+		<copy  todir="build/temp/base/org/simpro">
+			<fileset dir="build/classes/org/simpro" includes="Constant.class"/>
+		</copy>
+				
+		<mkdir dir="build/temp/base/org/simpro/exception"/>
+		<copy  todir="build/temp/base/org/simpro/exception">
+			<fileset dir="build/classes/org/simpro/exception" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+
+		<mkdir dir="build/temp/base/org/simpro/util"/>
+		<copy todir="build/temp/base/org/simpro/util">
+			<fileset dir="build/classes/org/simpro/util" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+		<mkdir dir="build/temp/base/org/simpro/upload"/>
+		<copy todir="build/temp/base/org/simpro/upload">
+			<fileset dir="build/classes/org/simpro/upload" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+		<mkdir dir="build/temp/base/org/simpro/metadata"/>
+		<copy  todir="build/temp/base/org/simpro/metadata">
+			<fileset dir="build/classes/org/simpro/metadata" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+		<!-- 打包 -->
+		<jar destfile="build/lib/simpro-base-${version}.jar">
+			<fileset dir="build/temp/base" />
+		</jar>
+		
+		
+		
+		<!--
+		2.dao及hibernate扩展部分文件收集
+		-->
+		<mkdir dir="build/temp/dao/org/simpro/dao"/>
+		<copy todir="build/temp/dao/org/simpro/dao">
+			<fileset dir="build/classes/org/simpro/dao" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+		<mkdir  dir="build/temp/dao/spring_config"/>
+		<copy todir="build/temp/dao/spring_config">
+			<fileset dir="${config.home}/common_config/spring_config"    includes="applicationContext_techframe_dao.xml"/>
+		</copy>
+		<!-- 打包 -->
+		<jar destfile="build/lib/simpro-dao-${version}.jar">
+			<fileset dir="build/temp/dao" />
+		</jar>
+		
+		<!--
+		3.web及stuct扩展部分 文件收集
+		-->
+		<mkdir dir="build/temp/web/org/simpro/web"/>
+		<copy todir="build/temp/web/org/simpro/web">
+			<fileset dir="build/classes/org/simpro/web" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+
+		<!-- 打包 -->
+		<jar destfile="build/lib/simpro-web-${version}.jar">
+			<fileset dir="build/temp/web" />
+		</jar>
+				
+		<!--
+		4.spring扩展部分文件收集
+		-->
+		<mkdir dir="build/temp/spring/org/simpro/spring"/>
+		<copy todir="build/temp/spring/org/simpro/spring">
+			<fileset dir="build/classes/org/simpro/spring" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+		<!-- 打包 -->
+		<jar destfile="build/lib/simpro-spring-${version}.jar">
+			<fileset dir="build/temp/spring" />
+		</jar>
+		
+		<!--websercie部分 文件收集-->
+		<mkdir dir="build/temp/webservice/org/simpro/webservice"/>
+		<copy todir="build/temp/webservice/org/simpro/webservice">
+			<fileset dir="build/classes/org/simpro/webservice" excludes="**/*.java, **/CVS,**/SVN"/>
+		</copy>
+		<mkdir  dir="build/temp/webservice/spring_config"/>
+		<copy todir="build/temp/webservice/spring_config">
+			<fileset dir="${config.common.home}/spring_config"    includes="applicationContext_techframe_webservice_interceptor.xml"/>
+		</copy>
+		<!-- 打包 -->
+		<jar destfile="build/lib/simpro-webservice-${version}.jar">
+			<fileset dir="build/temp/webservice" />
+		</jar>
+	</target>
+		
+	<!-- =========== -->
+	<!-- === DOC === -->
+	<!-- =========== -->
+	<target name="genedoc.techframe" depends="compile.techframe" description="creates the javadocs for techframe in build/javadoc">
+	    <mkdir dir="build/doc" />
+	    <javadoc  sourcepath="${src.home}" destdir="build/doc"
+	        author="true"
+	        version="true"
+	        private="false">
+	        <packageset dir="${src.home}" />
+	        <classpath refid="classpath" />
+	    </javadoc>
+	    <copy todir="build/doc">
+	     <fileset dir="${src.home}" includes="**/*.gif,**/*.jpg"/>
+	    </copy>
+	 </target>
+</project>

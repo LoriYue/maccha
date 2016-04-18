@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration
+    PUBLIC "-//Hibernate/Hibernate Configuration DTD//EN"
+    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+<session-factory>
+	<property name="connection.driver_class">
+		net.sourceforge.jtds.jdbc.Driver
+	</property>
+	<property name="connection.url">
+		jdbc:jtds:sqlserver://localhost:1433/demo
+	</property>
+	<property name="connection.password">sa</property>
+	<property name="connection.username">sa</property>
+	<property name="dialect">
+		org.hibernate.dialect.SQLServerDialect
+	</property>
+	<property name="hibernate.query.substitutions">
+		true 1, false 0
+	</property>
+	<property name="show_sql">true</property>
+	<!--
+
+	<mapping resource="bizframe_department_view.hbm.xml"/>
+	<mapping resource="bizframe_job_view.hbm.xml"/>
+	<mapping resource="bizframe_rbac.hbm.xml"/>
+    <mapping resource="bizframe_dict_view.hbm.xml"/>
+	<mapping resource="bizframe_dict.hbm.xml"/>
+	<mapping resource="wwop_uploadInput.hbm.xml"/>
+	<mapping resource="bizframe_orgn.hbm.xml"/>
+	<mapping resource="bizframe_rbac.hbm.xml"/>
+	
+	-->
+    
+    <mapping resource="bizframe_orgn.hbm.xml"/>
+</session-factory>
+</hibernate-configuration>

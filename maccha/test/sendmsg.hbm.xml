@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+                            "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+                            "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="com.hotid.sendmsg.entity" auto-import="true">
+
+	
+	<!--5.消息聊天频道 infocenter_channel -->
+	<class table="infocenter_channel" name="Channel" dynamic-update="true" dynamic-insert="true" >
+		<meta attribute="class-description">聊天频道</meta>
+		<id length="50" column="chan_id" name="id" type="string">
+			<generator class="assigned"/>
+		</id>
+		<property column="chan_create_time" name="createtime" type="string" length="50">
+			<meta attribute = "property-description">创建时间</meta>
+        	<meta attribute = "property-gb2312-name">创建时间</meta>
+		</property>
+		<property column="create_user_id" name="createUserId" type="string" length="50">
+			<meta attribute = "property-description">创建用户ID</meta>
+        	<meta attribute = "property-gb2312-name">创建用户ID</meta>
+		</property>
+		<property column="chan_type" name="type" type="string" length="50">
+			<meta attribute = "property-description">频道类型</meta>
+        	<meta attribute = "property-gb2312-name">频道类型</meta>
+		</property>
+		<property column="chan_status" name="status" type="string" length="2">
+			<meta attribute = "property-description">聊天组状态1、进行中 2、已结束</meta>
+        	<meta attribute = "property-gb2312-name">聊天组状态1、进行中 2、已结束</meta>
+		</property>
+		<property column="chan_name" name="name" type="string" length="50">
+			<meta attribute = "property-description">频道名</meta>
+        	<meta attribute = "property-gb2312-name">频道名</meta>
+		</property>
+		<property column="chan_title" name="title" type="string" length="50">
+			<meta attribute = "property-description">标题</meta>
+        	<meta attribute = "property-gb2312-name">标题</meta>
+		</property>
+		
+		<property column="chan_desc" name="desc" type="string" length="200">
+			<meta attribute = "property-description">频道描述</meta>
+        	<meta attribute = "property-gb2312-name">频道描述</meta>
+		</property>
+		
+		<property column="chan_close_time" name="closetime" type="string" length="50">
+			<meta attribute = "property-description">结束时间</meta>
+        	<meta attribute = "property-gb2312-name">结束时间</meta>
+		</property>
+	</class>
+	
+</hibernate-mapping>
