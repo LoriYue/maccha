@@ -1,5 +1,25 @@
 <config>
-	
+	<property name="testGetValueString" value="123456"/>
+	<property name="testGetBooleanValue" value="true"/>
+	<property name="testGetIntValue" value="120"/>
+	<property name="testGetFloatValue" value="0.12"/>
+	<testGetValueStringString>
+		<property name="testGetValueStringString1" value="aaa"/>
+	</testGetValueStringString>
+	<property name="testGetTextString" >test</property>
+	<testGetTextStringString>
+		<property name="testGetTextStringString1" >test</property>
+	</testGetTextStringString>
+	<testGetConfigUtils>
+		<testGetSubValueStringString>
+			<property name="testGetSubValueStringString1" value="aaa"/>
+		</testGetSubValueStringString>
+		<property name="testGetSubValueString" value="bbb"/>
+		<testGetSubTextStringString>
+			<property name="testGetSubTextStringString1" >test1</property>
+		</testGetSubTextStringString>
+		<property name="testGetSubTextString" >test2</property>
+	</testGetConfigUtils>
 	<!-- SQL是否处于调试状态 -->
     <property name="sqlDebugable" value="true"/>
     <!-- 解析sql.xml时,按照数据权限进行拼接过滤 -->
