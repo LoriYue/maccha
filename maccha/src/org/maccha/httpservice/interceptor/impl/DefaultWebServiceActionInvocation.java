@@ -13,129 +13,129 @@ import org.maccha.httpservice.interceptor.IWebServiceIntercepter;
 import org.springframework.stereotype.Component;
 
 @Component("DefaultWebServiceActionInvocation")
-public class DefaultWebServiceActionInvocation
-  implements IWebServiceActionInvocation
-{
-  private boolean executed = false;
-  private String resultCode;
-  private String service;
-  private IWebServiceAction serviceAction;
-  private Iterator interceptors;
-  private DataMessage requestDataMessage;
-  private DataMessage responseDataMessage;
+public class DefaultWebServiceActionInvocation implements IWebServiceActionInvocation {
+	private boolean executed = false;
+	private String resultCode;
+	private String service;
+	private IWebServiceAction serviceAction;
+	private Iterator interceptors;
+	private DataMessage requestDataMessage;
+	private DataMessage responseDataMessage;
 
-  public DefaultWebServiceActionInvocation(String service, DataMessage requestDataMessage, DataMessage responseDataMessage)
-  {
-    setService(service);
-    setRequestDataMessage(requestDataMessage);
-    setResponseDataMessage(responseDataMessage);
-    initInterceptors();
-  }
+	public DefaultWebServiceActionInvocation(String service,
+			DataMessage requestDataMessage, DataMessage responseDataMessage) {
+		this.setService(service);
+		this.setRequestDataMessage(requestDataMessage);
+		this.setResponseDataMessage(responseDataMessage);
+		this.initInterceptors();
+	}
 
-  public void initInterceptors() {
-    List interList = new ArrayList();
-    interList.add("ParametersWebServiceActionInvocation");
-    String inters = (String)getRequestDataMessage().getParameter("interceptors");
-    if (StringUtils.isNotNull(inters)) {
-      String[] ints = inters.split("\\|");
-      for (String str : ints) {
-        if (!StringUtils.isNotNull(str)) continue; interList.add(str);
-      }
-    }
-    setInterceptors(interList.iterator());
-  }
+	public void initInterceptors() {
+		List<String> interList = new ArrayList<String>();
+		interList.add("ParametersWebServiceActionInvocation");
+		String inters = (String) this.getRequestDataMessage().getParameter("interceptors");
+		if (StringUtils.isNotNull(inters)) {
+			String[] ints = inters.split("\\|");
+			for (String str : ints) {
+				if (StringUtils.isNotNull(str))	interList.add(str);
+			}
+		}
+		this.setInterceptors(interList.iterator());
+	}
 
-  public DefaultWebServiceActionInvocation()
-  {
-  }
+	public DefaultWebServiceActionInvocation() {
 
-  public String getResultCode() {
-    return this.resultCode;
-  }
+	}
 
-  public String getService() {
-    return this.service;
-  }
+	public String getResultCode() {
+		return resultCode;
+	}
 
-  public void setService(String service) {
-    this.service = service;
-    setServiceAction(service);
-  }
+	public String getService() {
+		return service;
+	}
 
-  public String invoke()
-    throws Exception
-  {
-    if (this.executed) {
-      throw new IllegalStateException("Service has already executed");
-    }
-    if ((this.interceptors != null) && (this.interceptors.hasNext())) {
-      IWebServiceIntercepter intercepter = null;
-      String strName = (String)this.interceptors.next();
-      try {
-        intercepter = (IWebServiceIntercepter)SpringManager.getComponent(strName);
-      }
-      catch (Exception e) {
-        throw new WebServiceException(strName + " not find in spring application*.xml!", e.getCause());
-      }
-      this.resultCode = intercepter.intercept(this);
-    } else {
-      this.resultCode = invokeServiceOnly();
-    }
+	public void setService(String service) {
+		this.service = service;
+		this.setServiceAction(service);
+	}
 
-    if (!this.executed) {
-      this.executed = true;
-    }
-    return this.resultCode;
-  }
+	/**
+	 * 拦截器迭代
+	 */
+	public String invoke() throws Exception {
+		if (executed) {
+			throw new IllegalStateException("Service has already executed");
+		}
+		if (interceptors != null && interceptors.hasNext()) {
+			IWebServiceIntercepter intercepter = null;
+			String strName = (String) interceptors.next();
+			try {
+				intercepter = (IWebServiceIntercepter) SpringManager.getComponent(strName);
+			} catch (Exception e) {
+				//System.out.println(strName + ":拦截器未定义");
+				throw new WebServiceException(strName + " not find in spring application*.xml!",e.getCause());
+			}
+			resultCode = intercepter.intercept(this);
+		} else {
+			resultCode = invokeServiceOnly();
 
-  public String invokeServiceOnly()
-    throws Exception
-  {
-    this.serviceAction.execute(getRequestDataMessage(), getResponseDataMessage());
-    return "success";
-  }
+		}
+		if (!executed) {
+			executed = true;
+		}
+		return resultCode;
+	}
 
-  public boolean isExecuted() {
-    return this.executed;
-  }
+	/**
+	 * Service执行
+	 */
+	public String invokeServiceOnly() throws Exception {
+		serviceAction.execute(getRequestDataMessage(),getResponseDataMessage());
+		return "success";
+	}
 
-  public void setResultCode(String resultCode) {
-    this.resultCode = resultCode;
-  }
+	public boolean isExecuted() {
+		return executed;
+	}
 
-  public void setExecuted(boolean executed) {
-    this.executed = executed;
-  }
+	public void setResultCode(String resultCode) {
+		this.resultCode = resultCode;
+	}
 
-  public void setInterceptors(Iterator interceptors) {
-    this.interceptors = interceptors;
-  }
+	public void setExecuted(boolean executed) {
+		this.executed = executed;
+	}
 
-  public Iterator getInterceptors() {
-    return this.interceptors;
-  }
+	public void setInterceptors(Iterator interceptors) {
+		this.interceptors = interceptors;
+	}
 
-  public DataMessage getRequestDataMessage() {
-    return this.requestDataMessage;
-  }
+	public Iterator getInterceptors() {
+		return this.interceptors;
+	}
 
-  public void setRequestDataMessage(DataMessage requestDataMessage) {
-    this.requestDataMessage = requestDataMessage;
-  }
+	public DataMessage getRequestDataMessage() {
+		return requestDataMessage;
+	}
 
-  public DataMessage getResponseDataMessage() {
-    return this.responseDataMessage;
-  }
+	public void setRequestDataMessage(DataMessage requestDataMessage) {
+		this.requestDataMessage = requestDataMessage;
+	}
 
-  public void setResponseDataMessage(DataMessage responseDataMessage) {
-    this.responseDataMessage = responseDataMessage;
-  }
+	public DataMessage getResponseDataMessage() {
+		return responseDataMessage;
+	}
 
-  public IWebServiceAction getServiceAction() {
-    return this.serviceAction;
-  }
+	public void setResponseDataMessage(DataMessage responseDataMessage) {
+		this.responseDataMessage = responseDataMessage;
+	}
 
-  public void setServiceAction(String Aservice) {
-    this.serviceAction = ((IWebServiceAction)SpringManager.getComponent(Aservice));
-  }
+	public IWebServiceAction getServiceAction() {
+		return this.serviceAction;
+	}
+
+	public void setServiceAction(String Aservice) {
+		this.serviceAction = (IWebServiceAction) SpringManager.getComponent(Aservice);
+	}
 }

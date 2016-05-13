@@ -31,7 +31,6 @@ public class AllTests {
 		suite.addTestSuite(ZipUtilTest.class);
 		suite.addTestSuite(MapUtilsTest.class);
 		suite.addTestSuite(Xml2MapUtilsTest.class);
-		suite.addTestSuite(ErrorCheckerTest.class);
 		suite.addTestSuite(GridHeaderTest.class);
 		suite.addTestSuite(ProxyUtilsTest.class);
 		suite.addTestSuite(ExistMapTest.class);

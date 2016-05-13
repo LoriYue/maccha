@@ -1,325 +1,355 @@
 package org.maccha.base.util;
 
-import java.io.PrintStream;
+/**
+ * 基本考虑 人民币大写单位银行规定用"元" 无零头金额后跟"整"<br>
+ * 有则不跟 角为零时不写角（如：零叁分） 四舍五入到分 <br>
+ * 为减少判读疑惑（一般对大写金额预期较高）和 体现人民币基本单位为元，<br>
+ * 金额低于壹圆前仍加"零元" 整数转换 若干零后若跟非零值，只显示一个零，<br>
+ * 否则不显示 万(亿)前有零后不加零，因亿、万为一完整单位， <br>
+ * （如：拾万贰仟 比 拾万零贰仟 更顺些） 亿为汉语计数最大单位，<br>
+ * 只要进位到总是显示（如：壹亿亿） 万为次最大单位，<br>
+ * 亿万之间必须有非零值方显示万 （如"壹亿"不可显示为"壹亿万"） 为减少被窜改的可能性，十进位总发壹音，<br>
+ * 这和下面的习惯读法不一样 （十进位处于第一位不发壹音，<br>
+ * 如"拾元"非"壹拾元"， 十进位处前有零是否不发壹音不太确定， <br>
+ * 如"叁仟零壹拾元"还是"叁仟零拾元"？） 用"拾万"不用"壹拾万"，<br>
+ * 因为每个整数进位后都有进位单位（拾佰仟万亿） <br>
+ * 这样即使金额前没有附防窜改的前缀如"人民币"字样也难窜改些 <br>
+ * 因为至少要加添两个汉字并且改动后数字必须进位才能窜改成 <br>
+ * （如"拾万"可改成"叁拾万"，而"壹拾万"至少要改成"壹佰壹拾万"）
+ * 
+ * @author fxy
+ * 
+ */
+public class RMBUtils {
 
-public class RMBUtils
-{
+	/**
+	 * 阿拉伯数字字符串转换为RMB中文
+	 * 
+	 * @param strNum
+	 * @return
+	 */
+	public static String getWords(String strNum) {
+		int n, m, k, i, j, q, p, s = 0;
+		int length, subLength, pstn;
+		String change, output, subInput, input = strNum;
+		output = "";
+		if (strNum.equals(""))
+			return null;
+		else {
+			length = input.length();
+			pstn = input.indexOf('.'); // 小数点的位置
 
-  public static String getWords(String strNum)
-  {
-    int s = 0;
+			if (pstn == -1) {
+				subLength = length;// 获得小数点前的数字
+				subInput = input;
+			} else {
+				subLength = pstn;
+				subInput = input.substring(0, subLength);
+			}
 
-    String input = strNum;
-    String output = "";
-    if (strNum.equals("")) {
-      return null;
-    }
-    int length = input.length();
-    int pstn = input.indexOf('.');
-    String subInput;
-    int subLength;
-    String subInput;
-    if (pstn == -1) {
-      int subLength = length;
-      subInput = input;
-    } else {
-      subLength = pstn;
-      subInput = input.substring(0, subLength);
-    }
+			char[] array = new char[4];
+			char[] array2 = { '仟', '佰', '拾' };
+			char[] array3 = { '亿', '万', '元', '角', '分' };
 
-    char[] array = new char[4];
-    char[] array2 = { '仟', '佰', '拾' };
-    char[] array3 = { '亿', '万', '元', 35282, '分' };
+			n = subLength / 4;// 以千为单位
+			m = subLength % 4;
 
-    int n = subLength / 4;
-    int m = subLength % 4;
+			if (m != 0) {
+				for (i = 0; i < (4 - m); i++) {
+					subInput = '0' + subInput;// 补充首位的零以便处理
+				}
+				n = n + 1;
+			}
+			k = n;
 
-    if (m != 0) {
-      for (int i = 0; i < 4 - m; i++) {
-        subInput = '0' + subInput;
-      }
-      n += 1;
-    }
-    int k = n;
+			for (i = 0; i < n; i++) {
+				p = 0;
+				change = subInput.substring(4 * i, 4 * (i + 1));
+				array = change.toCharArray();// 转换成数组处理
 
-    for (int i = 0; i < n; i++) {
-      int p = 0;
-      String change = subInput.substring(4 * i, 4 * (i + 1));
-      array = change.toCharArray();
+				for (j = 0; j < 4; j++) {
+					output += formatC(array[j]);// 转换成中文
+					if (j < 3) {
+						output += array2[j];// 补进单位，当为零是不补（千百十）
+					}
+					p++;
+				}
 
-      for (int j = 0; j < 4; j++) {
-        output = output + formatC(array[j]);
-        if (j < 3) {
-          output = output + array2[j];
-        }
-        p++;
-      }
+				if (p != 0)
+					output += array3[3 - k];// 补进进制（亿万元分角）
+				// 把多余的零去掉
 
-      if (p != 0) {
-        output = output + array3[(3 - k)];
-      }
+				String[] str = { "零仟", "零佰", "零拾" };
+				for (s = 0; s < 3; s++) {
+					while (true) {
+						q = output.indexOf(str[s]);
+						if (q != -1)
+							output = output.substring(0, q) + "零"
+									+ output.substring(q + str[s].length());
+						else
+							break;
+					}
+				}
+				while (true) {
+					q = output.indexOf("零零");
+					if (q != -1)
+						output = output.substring(0, q) + "零"
+								+ output.substring(q + 2);
+					else
+						break;
+				}
+				String[] str1 = { "零亿", "零万", "零元" };
+				for (s = 0; s < 3; s++) {
+					while (true) {
+						q = output.indexOf(str1[s]);
+						if (q != -1)
+							output = output.substring(0, q)
+									+ output.substring(q + 1);
+						else
+							break;
+					}
+				}
+				k--;
+			}
 
-      String[] str = { "零仟", "零佰", "零拾" };
-      for (s = 0; s < 3; s++) {
-        while (true) {
-          int q = output.indexOf(str[s]);
-          if (q == -1) break;
-          output = output.substring(0, q) + "零" + output.substring(q + str[s].length());
-        }
-      }
-      int q;
-      while (true)
-      {
-        q = output.indexOf("零零");
-        if (q == -1) break;
-        output = output.substring(0, q) + "零" + output.substring(q + 2);
-      }
+			if (pstn != -1)// 小数部分处理
+			{
+				for (i = 1; i < length - pstn; i++) {
+					if (input.charAt(pstn + i) != '0') {
+						output += formatC(input.charAt(pstn + i));
+						output += array3[2 + i];
+					} else if (i < 2)
+						output += "零";
+					else
+						output += "";
+				}
+			}
+			if (output.substring(0, 1).equals("零"))
+				output = output.substring(1);
+			if (output.substring(output.length() - 1, output.length()).equals(
+					"零"))
+				output = output.substring(0, output.length() - 1);
+			return output += "整";
+		}
+	}
 
-      String[] str1 = { "零亿", "零万", "零元" };
-      for (s = 0; s < 3; s++) {
-        while (true) {
-          q = output.indexOf(str1[s]);
-          if (q == -1) break;
-          output = output.substring(0, q) + output.substring(q + 1);
-        }
+	public static String get3Eng(String strNum) {
+		String strEng = "";
+		String str[] = { "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
+				"SEVEN", "EIGHT", "NINE" };
+		String str1[] = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN",
+				"FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
+		String str2[] = { "TEN", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY",
+				"SEVENTY", "EIGHTY", "NINETY", "HUNDRED" };
+		int num = Integer.parseInt(strNum);
+		int b = num / 100;
+		int t = (num % 100) / 10;
+		int g = (num % 100) % 10;
+		if (b != 0) {
+			strEng = strEng + str[b] + " " + str2[9];
+		}
 
-      }
+		if (t == 0) {
+			if (g != 0) {
+				if (b != 0) {
+					strEng = strEng + " AND ";
+				}
+				strEng = strEng + str[g];
+			}
+		} else if (t == 1) {
+			if (b != 0) {
+				strEng = strEng + " AND ";
+				num = num % 100;
+			}
+			strEng = strEng + str1[num - 10];
+		} else if (t != 1) {
+			if (g != 0) {
+				if (b != 0) {
+					strEng = strEng + " AND ";
+				}
+				strEng = strEng + str2[t - 1] + "-" + str[g];
+			} else {
+				if (b != 0) {
+					strEng = strEng + " AND ";
+				}
+				strEng = strEng + str2[t - 1] + str[g];
+			}
+		}
+		return strEng;
+	}
 
-      k--;
-    }
+	public static String getCent(String strNum) {
+		String strEng = "";
+		String str[] = { "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
+				"SEVEN", "EIGHT", "NINE" };
+		String str1[] = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN",
+				"FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
+		String str2[] = { "TEN", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY",
+				"SEVENTY", "EIGHTY", "NINETY", "HUNDRED" };
+		String str3[] = { "CENTS", "", "DOLLARS", "", "HUNDRED", "THOUSAND",
+				"", "", "MILLION", "", "", "BILLION", "", "" };
+		if (strNum.equals(""))
+			return null;
+		else {
+			int length = strNum.length();
+			if (length != 3) {
+				return "输入的位数错误！";
+			}
+			int cent = Integer.parseInt(strNum.substring(1, 3));
+			if (cent == 0) {
+				return strEng;
+			}
+			if (cent < 10) {
+				strEng = str3[0] + " " + strEng + str[cent];
+			} else if (cent >= 10 && cent <= 19) {
+				strEng = str3[0] + " " + strEng + str1[cent - 10];
+			} else if (cent > 19) {
+				int jiao = cent / 10;
+				int fen = cent % 10;
+				if (fen != 0) {
+					strEng = str3[0] + " " + strEng + str2[jiao - 1] + "-"
+							+ str[fen];
+				} else {
+					strEng = str3[0] + " " + strEng + str2[jiao - 1] + str[fen];
+				}
+			}
+			return strEng;
+		}
+	}
 
-    if (pstn != -1)
-    {
-      for (i = 1; i < length - pstn; i++)
-        if (input.charAt(pstn + i) != '0') {
-          output = output + formatC(input.charAt(pstn + i));
-          output = output + array3[(2 + i)];
-        } else if (i < 2) {
-          output = output + "零";
-        } else {
-          output = output + "";
-        }
-    }
-    if (output.substring(0, 1).equals("零"))
-      output = output.substring(1);
-    if (output.substring(output.length() - 1, output.length()).equals("零"))
-    {
-      output = output.substring(0, output.length() - 1);
-    }return output += "整";
-  }
+	/**
+	 * 阿拉伯数字字符串转换为RMB 英文
+	 * 
+	 * @param strNum
+	 * @return
+	 */
+	public static String getEngWords(String strNum) {
+		String strNumber = "";
+		String str3[] = { "CENTS", "", "DOLLARS", "", "HUNDRED", "THOUSAND",
+				"", "", "MILLION", "", "", "BILLION", "", "" };
+		String strEng = "";
+		strNumber = strNum;
+		int pointbz = strNumber.indexOf(".");
+		if (pointbz < 0) {
+			strNumber = strNumber + ".00";
+		} else if (pointbz > 0) {
+			int k = strNum.length() - pointbz;
+			if (k == 2) {
+				strNumber = strNumber + "0";
+			} else if (k == 1) {
+				strNumber = strNumber + "00";
+			}
+		}
+		int length = strNumber.length();
+		if (length > 16) {
+			return "您输入的值过大系统无法处理！";
+		}
+		String strb = "";
+		String strm = "";
+		String strq = "";
+		String stry = "";
+		String strf = "";
+		// 得到分
+		if (length == 3) {
+			strf = getCent(strNumber);
+			strEng = strEng + strf;
+		} else if (length > 3 && length < 7) {
+			stry = get3Eng(strNumber.substring(0, length - 3));
+			strf = getCent(strNumber.substring(length - 3, length));
+			strEng = strEng + stry + " " + str3[2];
+			if (!strf.equals("")) {
+				strEng = strEng + " AND " + strf;
+			}
+		} else if (length > 6 && length < 10) {
+			strq = get3Eng(strNumber.substring(0, length - 6));
+			stry = get3Eng(strNumber.substring(length - 6, length - 3));
+			strf = getCent(strNumber.substring(length - 3, length));
+			strEng = strEng + strq + " " + str3[5];
+			if (stry.equals("")) {
+				strEng = strEng + " " + stry;
+			} else {
+				strEng = strEng + " " + stry + " " + str3[2];
+			}
+			if (!strf.equals("")) {
+				strEng = strEng + " AND " + strf;
+			}
+		} else if (length > 9 && length < 13) {
+			strm = get3Eng(strNumber.substring(0, length - 9));
+			strq = get3Eng(strNumber.substring(length - 9, length - 6));
+			stry = get3Eng(strNumber.substring(length - 6, length - 3));
+			strf = getCent(strNumber.substring(length - 3, length));
+			strEng = strEng + strm + " " + str3[8];
+			if (!strq.equals("")) {
+				strEng = strEng + " " + strq + " " + str3[5];
+			}
+			if (!stry.equals("")) {
+				strEng = strEng + " " + stry + " " + str3[2];
+			} else {
+				strEng = strEng + " " + str3[2];
+			}
+			if (!strf.equals("")) {
+				strEng = strEng + " AND " + strf;
+			}
+		} else if (length > 12 && length < 16) {
+			strb = get3Eng(strNumber.substring(0, length - 12));
+			strm = get3Eng(strNumber.substring(length - 12, length - 9));
+			strq = get3Eng(strNumber.substring(length - 9, length - 6));
+			stry = get3Eng(strNumber.substring(length - 6, length - 3));
+			strf = getCent(strNumber.substring(length - 3, length));
+			strEng = strEng + strb + " " + str3[11];
+			if (!strm.equals("")) {
+				strEng = strEng + " " + strm + " " + str3[8];
+			}
+			if (!strq.equals("")) {
+				strEng = strEng + " " + strq + " " + str3[5];
+			}
+			if (!stry.equals("")) {
+				strEng = strEng + " " + stry + " " + str3[2];
+			} else {
+				strEng = strEng + " " + str3[2];
+			}
+			if (!strf.equals("")) {
+				strEng = strEng + " AND " + strf;
+			}
+		}
 
-  public static String get3Eng(String strNum)
-  {
-    String strEng = "";
-    String[] str = { "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE" };
+		return strEng + " ONLY";
+	}
 
-    String[] str1 = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
-
-    String[] str2 = { "TEN", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY", "HUNDRED" };
-
-    int num = Integer.parseInt(strNum);
-    int b = num / 100;
-    int t = num % 100 / 10;
-    int g = num % 100 % 10;
-    if (b != 0) {
-      strEng = strEng + str[b] + " " + str2[9];
-    }
-
-    if (t == 0) {
-      if (g != 0) {
-        if (b != 0) {
-          strEng = strEng + " AND ";
-        }
-        strEng = strEng + str[g];
-      }
-    } else if (t == 1) {
-      if (b != 0) {
-        strEng = strEng + " AND ";
-        num %= 100;
-      }
-      strEng = strEng + str1[(num - 10)];
-    } else if (t != 1) {
-      if (g != 0) {
-        if (b != 0) {
-          strEng = strEng + " AND ";
-        }
-        strEng = strEng + str2[(t - 1)] + "-" + str[g];
-      } else {
-        if (b != 0) {
-          strEng = strEng + " AND ";
-        }
-        strEng = strEng + str2[(t - 1)] + str[g];
-      }
-    }
-    return strEng;
-  }
-
-  public static String getCent(String strNum) {
-    String strEng = "";
-    String[] str = { "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE" };
-
-    String[] str1 = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
-
-    String[] str2 = { "TEN", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY", "HUNDRED" };
-
-    String[] str3 = { "CENTS", "", "DOLLARS", "", "HUNDRED", "THOUSAND", "", "", "MILLION", "", "", "BILLION", "", "" };
-
-    if (strNum.equals("")) {
-      return null;
-    }
-    int length = strNum.length();
-    if (length != 3) {
-      return "输入的位数错误！";
-    }
-    int cent = Integer.parseInt(strNum.substring(1, 3));
-    if (cent == 0) {
-      return strEng;
-    }
-    if (cent < 10) {
-      strEng = str3[0] + " " + strEng + str[cent];
-    } else if ((cent >= 10) && (cent <= 19)) {
-      strEng = str3[0] + " " + strEng + str1[(cent - 10)];
-    } else if (cent > 19) {
-      int jiao = cent / 10;
-      int fen = cent % 10;
-      if (fen != 0) {
-        strEng = str3[0] + " " + strEng + str2[(jiao - 1)] + "-" + str[fen];
-      }
-      else {
-        strEng = str3[0] + " " + strEng + str2[(jiao - 1)] + str[fen];
-      }
-    }
-    return strEng;
-  }
-
-  public static String getEngWords(String strNum)
-  {
-    String strNumber = "";
-    String[] str3 = { "CENTS", "", "DOLLARS", "", "HUNDRED", "THOUSAND", "", "", "MILLION", "", "", "BILLION", "", "" };
-
-    String strEng = "";
-    strNumber = strNum;
-    int pointbz = strNumber.indexOf(".");
-    if (pointbz < 0) {
-      strNumber = strNumber + ".00";
-    } else if (pointbz > 0) {
-      int k = strNum.length() - pointbz;
-      if (k == 2)
-        strNumber = strNumber + "0";
-      else if (k == 1) {
-        strNumber = strNumber + "00";
-      }
-    }
-    int length = strNumber.length();
-    if (length > 16) {
-      return "您输入的值过大系统无法处理！";
-    }
-    String strb = "";
-    String strm = "";
-    String strq = "";
-    String stry = "";
-    String strf = "";
-
-    if (length == 3) {
-      strf = getCent(strNumber);
-      strEng = strEng + strf;
-    } else if ((length > 3) && (length < 7)) {
-      stry = get3Eng(strNumber.substring(0, length - 3));
-      strf = getCent(strNumber.substring(length - 3, length));
-      strEng = strEng + stry + " " + str3[2];
-      if (!strf.equals(""))
-        strEng = strEng + " AND " + strf;
-    }
-    else if ((length > 6) && (length < 10)) {
-      strq = get3Eng(strNumber.substring(0, length - 6));
-      stry = get3Eng(strNumber.substring(length - 6, length - 3));
-      strf = getCent(strNumber.substring(length - 3, length));
-      strEng = strEng + strq + " " + str3[5];
-      if (stry.equals(""))
-        strEng = strEng + " " + stry;
-      else {
-        strEng = strEng + " " + stry + " " + str3[2];
-      }
-      if (!strf.equals(""))
-        strEng = strEng + " AND " + strf;
-    }
-    else if ((length > 9) && (length < 13)) {
-      strm = get3Eng(strNumber.substring(0, length - 9));
-      strq = get3Eng(strNumber.substring(length - 9, length - 6));
-      stry = get3Eng(strNumber.substring(length - 6, length - 3));
-      strf = getCent(strNumber.substring(length - 3, length));
-      strEng = strEng + strm + " " + str3[8];
-      if (!strq.equals("")) {
-        strEng = strEng + " " + strq + " " + str3[5];
-      }
-      if (!stry.equals(""))
-        strEng = strEng + " " + stry + " " + str3[2];
-      else {
-        strEng = strEng + " " + str3[2];
-      }
-      if (!strf.equals(""))
-        strEng = strEng + " AND " + strf;
-    }
-    else if ((length > 12) && (length < 16)) {
-      strb = get3Eng(strNumber.substring(0, length - 12));
-      strm = get3Eng(strNumber.substring(length - 12, length - 9));
-      strq = get3Eng(strNumber.substring(length - 9, length - 6));
-      stry = get3Eng(strNumber.substring(length - 6, length - 3));
-      strf = getCent(strNumber.substring(length - 3, length));
-      strEng = strEng + strb + " " + str3[11];
-      if (!strm.equals("")) {
-        strEng = strEng + " " + strm + " " + str3[8];
-      }
-      if (!strq.equals("")) {
-        strEng = strEng + " " + strq + " " + str3[5];
-      }
-      if (!stry.equals(""))
-        strEng = strEng + " " + stry + " " + str3[2];
-      else {
-        strEng = strEng + " " + str3[2];
-      }
-      if (!strf.equals("")) {
-        strEng = strEng + " AND " + strf;
-      }
-    }
-
-    return strEng + " ONLY";
-  }
-
-  public static String formatC(char x) {
-    String a = "";
-    switch (x) {
-    case '0':
-      a = "零";
-      break;
-    case '1':
-      a = "壹";
-      break;
-    case '2':
-      a = "贰";
-      break;
-    case '3':
-      a = "叁";
-      break;
-    case '4':
-      a = "肆";
-      break;
-    case '5':
-      a = "伍";
-      break;
-    case '6':
-      a = "陆";
-      break;
-    case '7':
-      a = "柒";
-      break;
-    case '8':
-      a = "捌";
-      break;
-    case '9':
-      a = "玖";
-    }
-
-    return a;
-  }
+	public static String formatC(char x) {
+		String a = "";
+		switch (x) {
+		case '0':
+			a = "零";
+			break;
+		case '1':
+			a = "壹";
+			break;
+		case '2':
+			a = "贰";
+			break;
+		case '3':
+			a = "叁";
+			break;
+		case '4':
+			a = "肆";
+			break;
+		case '5':
+			a = "伍";
+			break;
+		case '6':
+			a = "陆";
+			break;
+		case '7':
+			a = "柒";
+			break;
+		case '8':
+			a = "捌";
+			break;
+		case '9':
+			a = "玖";
+			break;
+		}
+		return a;
+	}
 }

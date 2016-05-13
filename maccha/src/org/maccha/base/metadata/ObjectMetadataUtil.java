@@ -8,17 +8,9 @@ import java.util.Map;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Formula;
-import org.hibernate.mapping.ManyToOne;
 import org.hibernate.mapping.MetaAttribute;
-import org.hibernate.mapping.OneToMany;
-import org.hibernate.mapping.OneToOne;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
-import org.hibernate.mapping.Set;
-import org.hibernate.mapping.SingleTableSubclass;
-import org.hibernate.mapping.Value;
-import org.hibernate.type.AnyType;
-import org.hibernate.type.Type;
 import org.maccha.base.util.StringUtils;
 import org.maccha.spring.SpringManager;
 import org.maccha.base.metadata.ObjectMetadata;
@@ -55,51 +47,56 @@ public class ObjectMetadataUtil
   public static final String PROPERTY_IS_SECURITYABLE = "property-is-securityable";
   public static final String PROPERTY_GLOBALDAPTYPE = "property-globaldap-type";
   
-  /**
-   * 获取Hibernate Configuration
-   * @return
-   */
-  public static Configuration getConfiguration() {
-    LocalSessionFactoryBean sessionFactoryBean = (LocalSessionFactoryBean)SpringManager.getComponent("&sessionFactory");
-    Configuration conf = sessionFactoryBean.getConfiguration();
-    return conf;
-  }
-
-  public static List getEntityMetadata() {
-    Iterator itr = getConfiguration().getClassMappings();
-    List listEntityMetadata = new ArrayList();
-    while (itr.hasNext()) {
-      PersistentClass persistentClass = (PersistentClass)itr.next();
-      listEntityMetadata.add(getEntityMetadata(persistentClass));
-    }
-    return listEntityMetadata;
-  }
-  /**
+  	/**
+  	 * 获取Hibernate Configuration
+  	 * @return
+  	 */
+	public static Configuration getConfiguration() {
+		LocalSessionFactoryBean sessionFactoryBean = (LocalSessionFactoryBean) SpringManager
+				.getComponent("&sessionFactory");
+		Configuration conf = sessionFactoryBean.getConfiguration();
+		return conf;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public static List getEntityMetadata() {
+		java.util.Iterator itr = getConfiguration().getClassMappings();
+		List listEntityMetadata = new ArrayList();
+		while (itr.hasNext()) {
+			PersistentClass persistentClass = (PersistentClass) itr.next();
+			listEntityMetadata.add(getEntityMetadata(persistentClass));
+		}
+		return listEntityMetadata;
+	}
+	/**
 	 * 获得实体属性Metadata数据
 	 * 
 	 * @param entityName
 	 *            实体对象class名
 	 * @return ObjectMetadata
 	 */
-  public static ObjectMetadata getEntityMetadata(String entityName)
-  {
-    PersistentClass persistentClass = getConfiguration().getClassMapping(entityName);
-    return getEntityMetadata(persistentClass);
-  }
-  /**
+	public static ObjectMetadata getEntityMetadata(String entityName) {
+		PersistentClass persistentClass = getConfiguration().getClassMapping(entityName);
+		return getEntityMetadata(persistentClass);
+	}
+	/**
 	 * 获得实体属性Metadata数据
 	 * 
 	 * @param entityName
 	 *            实体对象class名
 	 * @return ObjectMetadata
 	 */
-  private static ObjectMetadata getEntityMetadata(PersistentClass persistentClass) {
-	  ObjectMetadata propMetadata = new ObjectMetadata();
+	private static ObjectMetadata getEntityMetadata(PersistentClass persistentClass) {
+		ObjectMetadata propMetadata = new ObjectMetadata();
 		String strSubClassHead = "" ;
 		//如果对象为子类则取需要通过类的前缀作为Metadata信息
 		if(persistentClass instanceof org.hibernate.mapping.SingleTableSubclass){
+	//		System.out.println("EntityName:::::::::::::::"+persistentClass.getClassName());
 			strSubClassHead = StringUtils.unqualify(persistentClass.getClassName(),'.')+"-";
 		}
+	//	MetaAttribute metaGBAttr = persistentClass.getMetaAttribute((strSubClassHead+ObjectMetadataUtil.CLASS_GB2312_NAME).trim());
 		MetaAttribute metaGBAttr = persistentClass.getMetaAttribute((ObjectMetadataUtil.CLASS_GB2312_NAME).trim());
 		MetaAttribute metaDescAttr = persistentClass.getMetaAttribute((ObjectMetadataUtil.CLASS_DESCRIPTION).trim());
 		MetaAttribute metaImplementsAttr = persistentClass.getMetaAttribute(ObjectMetadataUtil.CLASS_IMPLEMENTS);
@@ -110,26 +107,30 @@ public class ObjectMetadataUtil
 		propMetadata.setDescription(getMetadataString(metaDescAttr));
 	    propMetadata.setEntityImplements(getMetadataString(metaImplementsAttr));
 		propMetadata.setIsGlobalPO(getMetadataString(metaGlobalDapAttr));
+	//	MetaAttribute metaGlobalDapTypeAttr = persistentClass.getMetaAttribute(ObjectMetadataUtil.CLASS_GLOBALDAPTYPE);
+	//	if (metaGlobalDapTypeAttr != null) {
+	//		propMetadata.setGlobalPOType(metaGlobalDapTypeAttr.getValue());
+	//	}
 		return propMetadata;
-  }
-  private static String getMetadataString(MetaAttribute metaAttr) {
-    String str = null;
-    if (metaAttr != null) {
-      List list = metaAttr.getValues();
-      if (list.size() > 0) {
-        str = (String)list.get(list.size() - 1);
-      }
-    }
-    return str;
-  }
-  /**
+	}
+	private static String getMetadataString(MetaAttribute metaAttr){
+		String str=null;
+		if(metaAttr!=null){
+			List list=metaAttr.getValues();
+			if(list.size()>0){
+				str=(String)list.get(list.size()-1);
+			}
+		}
+		return str;
+	}
+	/**
 	 * 获得实体属性Metadata数据
 	 * 
 	 * @param entityName 实体对象class名
 	 * @return Map key:property name ,value :{@link com.icitic.util.PropertyMetadata}
 	 */
-  public static Map getEntityPropertyMetadata(String entityName) {
-	  PersistentClass persistentClass = getConfiguration().getClassMapping(entityName);
+	public static Map getEntityPropertyMetadata(String entityName) {
+		PersistentClass persistentClass = getConfiguration().getClassMapping(entityName);
 		if (persistentClass == null)return null;
 		Map hashPropMetadata = new HashMap();
 		// 处理主键
@@ -140,9 +141,9 @@ public class ObjectMetadataUtil
 		// 处理其他键值
 		getEntityPropertyMetadata(persistentClass,hashPropMetadata);
 		return hashPropMetadata;
-  }
-  private static void getEntityPropertyMetadata(PersistentClass persistentClass, Map mapPropMetadata) {
-	  Iterator itr = persistentClass.getPropertyIterator();
+	}
+	private static void getEntityPropertyMetadata(PersistentClass persistentClass, Map mapPropMetadata) {		
+		Iterator itr = persistentClass.getPropertyIterator();
 		while (itr.hasNext()) {
 			Property prop = (Property) itr.next();
 			String propName = prop.getName();
@@ -151,11 +152,10 @@ public class ObjectMetadataUtil
 		}
 		PersistentClass superPersistentClass = persistentClass.getSuperclass();
 		if (superPersistentClass != null)
-			getEntityPropertyMetadata(superPersistentClass,mapPropMetadata);
-  }
-
-  private static PropertyMetadata createPropertyMetadataFromHbmProperty(Property prop) {
-	  int intDiscoverWidth = 0;
+			getEntityPropertyMetadata(superPersistentClass,mapPropMetadata);		
+	}
+	private static PropertyMetadata createPropertyMetadataFromHbmProperty(Property prop) {
+		int intDiscoverWidth = 0;
 		int intDiscoverIndex = 0;
 		PropertyMetadata propMetadata = new PropertyMetadata();
 		String propName = prop.getName();
@@ -175,6 +175,7 @@ public class ObjectMetadataUtil
 		}
 		propMetadata.setPropertyRelation("none");
 		org.hibernate.mapping.Value propValue = prop.getValue();
+		//org.hibernate.type.Type type = prop.getType();
 		
 		if (propValue instanceof org.hibernate.mapping.OneToOne){
 			propMetadata.setPropertyType(((org.hibernate.mapping.OneToOne)propValue).getReferencedEntityName());
@@ -196,6 +197,8 @@ public class ObjectMetadataUtil
 				propMetadata.setPropertyType(valueMany.getReferencedEntityName());
 				propMetadata.collectionKeyColumnName=setObj.getCollectionTable().getColumn(0).getName();
 				propMetadata.collectionForeignColumnName=setObj.getCollectionTable().getColumn(2).getName();
+	//			System.out.println(setObj.getCollectionTable().getColumn(0).getName());
+	//			System.out.println(setObj.getCollectionTable().getColumn(2).getName());
 				propMetadata.collectionTableName=valueMany.getTable().getName();
 				
 			}
@@ -203,7 +206,7 @@ public class ObjectMetadataUtil
 		}else{
 			propMetadata.setPropertyType(propertyType);
 		}
-
+	
 		org.hibernate.type.Type type = prop.getType();
 		if (type instanceof org.hibernate.type.AnyType) {
 			propMetadata.setEntityType(true);
@@ -213,20 +216,17 @@ public class ObjectMetadataUtil
 		propMetadata.setGbName(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_GB2312_NAME));
 		propMetadata.setDescription(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_DESCRIPTION));
 		propMetadata.setRbacVisible(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_RBAC_VISIBLE));
-
 		propMetadata.setUiPomanagerEditable(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_EDITABLE));
 		propMetadata.setUiPomanagerIndex(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_INDEX));		
 		propMetadata.setUiPomanagerTitlename(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_TITLENAME));
 		propMetadata.setUiPomanagerShowTitlename(getMeteAttribute(prop, ObjectMetadataUtil.PROPERTY_UI_POMANAGER_SHOWTITLENAME));
 		propMetadata.setUiPomanagerEdittype(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_EDITTYPE));
 		propMetadata.setUiPomanagerEditattribute(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_EDITATTRIBUTE));
-
 		propMetadata.setUiPomanagerVisible(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_VISIBLE));
 		propMetadata.setUiPomanagerWidth(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_WIDTH));
 		propMetadata.setUiPomanagerParam(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_PARAM));
 		propMetadata.setUiPomanagerSearchable(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_SEARCHABLE));
 		propMetadata.setUiPomanagerExportable(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_UI_POMANAGER_EXPORTABLE));
-
 		propMetadata.setDiscoverExpression(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_DISCOVER_EXPRESSION));
 		propMetadata.setDiscoverVisible(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_DISCOVER_VISIBLE));
 		propMetadata.setDiscoverIndex(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_DISCOVER_INDEX));
@@ -235,19 +235,18 @@ public class ObjectMetadataUtil
 		propMetadata.setIsGlobalProperty(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_GLOBALDAP));
 		propMetadata.setGlobalPOType(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_GLOBALDAPTYPE));
 		propMetadata.setIsSecurityable(getMeteAttribute(prop,ObjectMetadataUtil.PROPERTY_IS_SECURITYABLE));
-		
 		return propMetadata;
-  }
-  /**
+	}
+	
+	/**
 	 * 获得实体属性Metadata数据
 	 * 
 	 * @param entityName 实体对象class名
 	 * @return Map key:property name ,value :{@link com.icitic.util.PropertyMetadata}
 	 */
-  public static List getEntityPropertyMetadataList(String entityName) {
-	  PersistentClass persistentClass = getConfiguration().getClassMapping(entityName);		
+	public static List getEntityPropertyMetadataList(String entityName) {
+		PersistentClass persistentClass = getConfiguration().getClassMapping(entityName);		
 		List listPropMetadata = new ArrayList();
-
 		// 处理主键
 		Property propKey = persistentClass.getIdentifierProperty();
 		String propKeyName = propKey.getName();
@@ -255,12 +254,11 @@ public class ObjectMetadataUtil
 		listPropMetadata.add(propKeyMetadata);
 		//处理其他键值
 		getEntityPropertyMetadataInfo(persistentClass, listPropMetadata);
-
 		return listPropMetadata;
-  }
-
-  private static void getEntityPropertyMetadataInfo(PersistentClass persistentClass, List listPropMetadata) {
-	  Iterator itr = persistentClass.getPropertyIterator();
+	}
+	
+	private static void getEntityPropertyMetadataInfo(PersistentClass persistentClass, List listPropMetadata) {		
+		Iterator itr = persistentClass.getPropertyIterator();
 		while (itr.hasNext()) {
 			Property prop = (Property) itr.next();
 			PropertyMetadata propMetadata = createPropertyMetadataFromHbmProperty(prop);
@@ -269,15 +267,15 @@ public class ObjectMetadataUtil
 		PersistentClass superPersistentClass = persistentClass.getSuperclass();
 		if (superPersistentClass != null)
 			getEntityPropertyMetadataInfo(superPersistentClass,listPropMetadata);
-  }
-
-  private static String getMeteAttribute(Property prop, String metaName) {
-	  String strRetrun = null;
+	}
+	
+	private static String getMeteAttribute(Property prop, String metaName) {
+		String strRetrun = null;
 		// LogUtils.info(":::::::::::::::::metaName = " + metaName);
 		//System.out.println(":::::::::::::::::metaName = " + metaName);
 		MetaAttribute metaAttr = prop.getMetaAttribute(metaName);
 		if (metaAttr == null)return strRetrun;
 		strRetrun = metaAttr.getValue();
 		return strRetrun;
-  }
+	}
 }

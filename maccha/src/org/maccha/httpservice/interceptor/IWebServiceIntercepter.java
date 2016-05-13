@@ -1,7 +1,6 @@
 package org.maccha.httpservice.interceptor;
 
-public abstract interface IWebServiceIntercepter
-{
-  public abstract String intercept(IWebServiceActionInvocation paramIWebServiceActionInvocation)
-    throws Exception;
+
+public abstract interface IWebServiceIntercepter {
+	public String intercept(IWebServiceActionInvocation actionInvocation) throws Exception;
 }

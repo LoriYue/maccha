@@ -4,27 +4,25 @@ import java.util.Iterator;
 import org.maccha.httpservice.DataMessage;
 import org.maccha.httpservice.IWebServiceAction;
 
-public abstract interface IWebServiceActionInvocation
-{
-  public abstract DataMessage getRequestDataMessage();
+public interface IWebServiceActionInvocation {
 
-  public abstract DataMessage getResponseDataMessage();
+	DataMessage getRequestDataMessage();
 
-  public abstract Iterator getInterceptors();
+	DataMessage getResponseDataMessage();
 
-  public abstract String getService();
+	Iterator getInterceptors();
 
-  public abstract IWebServiceAction getServiceAction();
+	String getService();
+	
+	IWebServiceAction getServiceAction();
 
-  public abstract boolean isExecuted();
+	boolean isExecuted();
 
-  public abstract String getResultCode();
+	String getResultCode();
 
-  public abstract void setResultCode(String paramString);
+	void setResultCode(String resultCode);
 
-  public abstract String invoke()
-    throws Exception;
+	String invoke() throws Exception;
 
-  public abstract String invokeServiceOnly()
-    throws Exception;
+	String invokeServiceOnly() throws Exception;
 }

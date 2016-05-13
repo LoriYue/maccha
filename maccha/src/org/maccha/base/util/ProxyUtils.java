@@ -15,18 +15,24 @@ public class ProxyUtils implements InvocationHandler {
 		this.interface_cls = cls;
 	}
 	/**
-	 * 获取代理对象
-	 * @param cls 要代理的接口类型
-	 * @param data 参数键值对
-	 * @return
-	 */
+     * 通过数据访问/存储数据接口获得接口实例
+     * @param cls 接口类
+     * @return 实现的接口实例
+     */
 	public static Object getObject(Class cls, Map data) {
 		ProxyUtils proxyUtils = new ProxyUtils(cls, data);
 		Class[] interfaces = { cls };
 		ClassLoader classLoader = ProxyUtils.class.getClassLoader();
 		return Proxy.newProxyInstance(classLoader, interfaces, proxyUtils);
 	}
-
+	/**
+     * InvocationHandler接口的实现方法，实现动态代理
+     * @param proxy
+     * @param method
+     * @param args
+     * @return
+     * @throws java.lang.Throwable
+     */
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		String methodName = method.getName();
 		if (methodName.startsWith("get")) {

@@ -28,7 +28,6 @@ public class StringUtils {
     public static final String DOT = ".";
     public static final String SLASH = "/";
     public static final String EMPTY = "";
-    static Hashtable map = new Hashtable();
     public static String[] chars = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
     /**
@@ -192,12 +191,12 @@ public class StringUtils {
         cutStrLenth4Maps(mapList, keyNames, 0, lenth, "...");
     }
     /**
-     * 格式化字符串
-     * @param template  模板，用{}符号表示要替换的字符串
-     * @param values    要替换的字符串数组，数组中的元素个数不小于模板中{}符号的个数
-     * @return
+     * 格式化文本
+     * @param template 文本模板，被替换的部分用 {} 表示
+     * @param values 参数值
+     * @return 格式化后的文本
      */
-    public static String format(String template, Object[] values) {
+    public static String format(String template, Object... values) {
         return String.format(template.replace("{}", "%s"), values);
     }
     /**
@@ -211,14 +210,18 @@ public class StringUtils {
         }
         return "";
     }
-
+    /**
+	 * 将Ascii转换为String
+	 * 
+	 * @param str
+	 * @return
+	 */
     public static String asciiToString(String str) {
         if (isNotNull(str)) {
             return String.valueOf((char)(Integer.parseInt(str) + 64));
         }
         return String.valueOf('A');
     }
-
     /**
      * 判读字符串是否为空
      * @param value
@@ -424,7 +427,7 @@ public class StringUtils {
                 tokens.add(token);
             }
         }
-        return (String[])(String[])tokens.toArray(new String[tokens.size()]);
+        return (String[])tokens.toArray(new String[tokens.size()]);
     }
     /**
      * 拆分字符串为数组
@@ -450,7 +453,7 @@ public class StringUtils {
         {
             l.add(s.substring(pos));
         }
-        return (String[])(String[])l.toArray(new String[l.size()]);
+        return (String[])l.toArray(new String[l.size()]);
     }
     /**
      * 将字符串拆分为整数数组
@@ -690,14 +693,14 @@ public class StringUtils {
      * @return
      */
     public static String cleanPath(String path) {
-        String p = replace(path, "\\", "/");
-        String[] pArray = split(p, "/");
+        String p = replace(path, WIN_CHANGE_PATH, CHANGE_PATH);
+        String[] pArray = split(p, CHANGE_PATH);
         List pList = new LinkedList();
         int tops = 0;
         for (int i = pArray.length - 1; i >= 0; i--) {
-            if (".".equals(pArray[i]))
+            if (CURRENT_PATH.equals(pArray[i]))
                 continue;
-            if ("..".equals(pArray[i])) {
+            if (TOP_PATH.equals(pArray[i])) {
                 tops++;
             }
             else if (tops > 0)
@@ -706,9 +709,14 @@ public class StringUtils {
                 pList.add(0, pArray[i]);
             }
         }
-        return join(pList, "/");
+        return join(pList, CHANGE_PATH);
     }
-
+    /**
+	 * 从Blob大对象中获得StringBuffer
+	 * 
+	 * @param blob
+	 * @return
+	 */
     public static StringBuffer getStrByBlob(Blob blob) throws IOException, SQLException {
         StringBuffer buf = new StringBuffer();
         BufferedReader in = new BufferedReader(new InputStreamReader(blob.getBinaryStream()));
@@ -720,7 +728,12 @@ public class StringUtils {
         tmp = null;
         return buf;
     }
-
+    /**
+	 * 从Clob大对象中获得StringBuffer
+	 * 
+	 * @param clob
+	 * @return
+	 */
     public static StringBuffer getStrByClob(Clob clob) throws IOException, SQLException {
         StringBuffer buf = new StringBuffer();
         BufferedReader in = new BufferedReader(new InputStreamReader(clob.getAsciiStream()));
@@ -732,7 +745,13 @@ public class StringUtils {
         tmp = null;
         return buf;
     }
-
+    /**
+	 * 压缩字符串
+	 * 
+	 * @param str
+	 *            源字符串
+	 * @return
+	 */
     public static String compress(String str) throws Exception {
         ByteArrayOutputStream data_ = null;
         String base64Src = "";
@@ -744,7 +763,12 @@ public class StringUtils {
         base64Src = new String(Base64Utils.encode(data_.toByteArray()));
         return base64Src;
     }
-
+    /**
+	 * 解压缩字符串
+	 * 
+	 * @param str
+	 * @return
+	 */
     public static String deCompress(String str) throws Exception {
         String object_ = null;
         byte[] byteSrc64 = Base64Utils.decode(str.getBytes());
@@ -761,14 +785,23 @@ public class StringUtils {
         gzIn.close();
         return object_;
     }
-
+    /**
+     * 字符串转base64编码
+     * @param s
+     * @return
+     */
     public static String encodedBase64(String s) {
         if (s == null) {
             return null;
         }
         return Base64Utils.encode(s);
     }
-
+    /**
+     * base64编码转字符串
+     * @param s
+     * @param code
+     * @return
+     */
     public static String decodedBase64(String s, String code) {
         if (s == null)
             return null;
@@ -776,11 +809,17 @@ public class StringUtils {
         {
             byte[] b = Base64Utils.decode(s.getBytes());
             if (code != null) return new String(b, code);
-            return new String(b); } catch (Exception e) {
+            return new String(b); 
+        } catch (Exception e) {
+        	e.printStackTrace();
         }
         return null;
     }
-
+    /**
+     * 应用程序到数据库中文转码
+     * @param value
+     * @return 返回ISO8859-1字符
+     */
     public static String app2DbEncode(String value) {
         if ((value == null) || (value.equals("null"))) {
             value = "";
@@ -788,45 +827,44 @@ public class StringUtils {
         try {
             return new String(value.getBytes("ISO8859-1"));
         } catch (Exception e) {
-
+        	e.printStackTrace();
         }
         return value + "";
     }
-
-    public static String db2AppEncode(String value)
-    {
+    /**
+     * 数据库到应用程序中文转码
+     * @param value
+     * @return 返回ISO8859-1字符
+     */
+    public static String db2AppEncode(String value) {
         if ((value == null) || (value.equals("null"))) {
             value = "";
         }
-        try
-        {
-            return new String(value.getBytes("ISO8859-1")); } catch (Exception e) {
+        try {
+            return new String(value.getBytes("ISO8859-1")); 
+        } catch (Exception e) {
+        	e.printStackTrace();
         }
         return value + "";
     }
 
-    public static String unicodeToGB(String strIn)
-    {
+    public static String unicodeToGB(String strIn) {
         if ((strIn == null) || (strIn.equals(""))) {
             return strIn;
         }
-
-        try
-        {
+        try {
             String strOut = new String(strIn.getBytes("GBK"), "ISO8859_1");
             return strOut;
         } catch (UnsupportedEncodingException e) {
             logger.info("Unsupported Encoding at CharsetConvert.unicodeToGB()");
-        }return strIn;
+        }
+        return strIn;
     }
 
-    public static String escape(String src)
-    {
+    public static String escape(String src) {
         if (src == null) return src;
-
         StringBuffer tmp = new StringBuffer();
         tmp.ensureCapacity(src.length() * 6);
-
         for (int i = 0; i < src.length(); i++) {
             char j = src.charAt(i);
             if ((Character.isDigit(j)) || (Character.isLowerCase(j)) || (Character.isUpperCase(j))) { tmp.append(j);
@@ -847,7 +885,6 @@ public class StringUtils {
         StringBuffer tmp = new StringBuffer();
         tmp.ensureCapacity(src.length());
         int lastPos = 0; int pos = 0;
-
         while (lastPos < src.length()) {
             pos = src.indexOf("%", lastPos);
             if (pos == lastPos) {
@@ -868,12 +905,10 @@ public class StringUtils {
             tmp.append(src.substring(lastPos, pos));
             lastPos = pos;
         }
-
         return tmp.toString();
     }
 
-    public static String GBToUnicode(String strIn)
-    {
+    public static String GBToUnicode(String strIn) {
         if ((strIn == null) || (strIn.equals(""))) {
             return strIn;
         }
@@ -887,8 +922,7 @@ public class StringUtils {
         }return strIn;
     }
 
-    public static String htmlEncode(String str)
-    {
+    public static String htmlEncode(String str) {
         if (!isNotNull(str))
             return "";
         str = str.replaceAll("&", "&amp;");
@@ -901,11 +935,9 @@ public class StringUtils {
 
     private static String deleteStart(String str, String start) {
         String kaitou = str;
-
         while ((kaitou.length() > 0) && (kaitou.indexOf(start) == 0)) {
             kaitou = kaitou.substring(start.length());
         }
-
         return kaitou;
     }
 
@@ -984,9 +1016,12 @@ public class StringUtils {
         return url;
     }
 
-    
-    public static String utf8URLencode(String text)
-    {
+    /**
+     * Utf8URL编码
+     * @param s
+     * @return
+     */
+    public static String utf8URLencode(String text) {
         StringBuffer result = new StringBuffer();
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -1007,9 +1042,12 @@ public class StringUtils {
         }
         return result.toString();
     }
-
-    public static String decodeURI2UTF8(String str)
-    {
+    /**
+ 	 * LK [2009.08.03 16:31]
+ 	 * 把经IE端js encodeURI 转换过的URIstring编码转换成UTF-8
+ 	 * @return
+ 	 */
+    public static String decodeURI2UTF8(String str) {
         String ret = "";
         if (isNotNull(str))
             try {
@@ -1019,9 +1057,12 @@ public class StringUtils {
             }
         return ret;
     }
-
-    public static String utf8URLdecode(String text)
-    {
+    /**
+     * Utf8URL解码
+     * @param text
+     * @return
+     */
+    public static String utf8URLdecode(String text) {
         String result = "";
         int p = 0;
         if ((text != null) && (text.length() > 0)) {
@@ -1040,8 +1081,7 @@ public class StringUtils {
         return result + text;
     }
 
-    private static String _codeToWord(String text)
-    {
+    private static String _codeToWord(String text) {
         String result;
         if (_utf8codeCheck(text)) {
             byte[] code = new byte[3];
@@ -1053,15 +1093,13 @@ public class StringUtils {
             } catch (UnsupportedEncodingException ex) {
                 result = null;
             }
-        }
-        else {
+        } else {
             result = text;
         }
         return result;
     }
 
-    private static boolean _utf8codeCheck(String text)
-    {
+    private static boolean _utf8codeCheck(String text) {
         String sign = "";
         if (text.startsWith("%e")) {
             int i = 0; for (int p = 0; p != -1; i++) {

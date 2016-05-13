@@ -1,5 +1,8 @@
 package org.maccha.base.util;
 
+import java.util.List;
+import java.util.Map;
+
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -27,7 +30,7 @@ public class ExcelUtilsTest extends TestCase {
 	}
 
 	@Test
-	public void testParseExcel2Map() {
+	public void testParseExcel2Map() throws Exception {
 		fail("Not yet implemented");
 	}
 

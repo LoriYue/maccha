@@ -5,114 +5,188 @@ import java.io.PrintWriter;
 import org.apache.commons.lang.exception.Nestable;
 import org.apache.commons.lang.exception.NestableDelegate;
 
-public class WebServiceException extends RuntimeException
-  implements Nestable
-{
-  private static final long serialVersionUID = 1L;
-  protected NestableDelegate delegate = new NestableDelegate(this);
+public class WebServiceException extends RuntimeException implements Nestable {
+    
+    /**
+     * Required for serialization support.
+     * 
+     * @see java.io.Serializable
+     */
+    private static final long serialVersionUID = 1L;
 
-  private Throwable cause = null;
+    /**
+     * The helper instance which contains much of the code which we
+     * delegate to.
+     */
+    protected NestableDelegate delegate = new NestableDelegate(this);
 
-  public static void handleMessageException(String message, Throwable t)
-  {
-    throw new WebServiceException(message, t);
-  }
-
-  public static void handleMessageException(String message)
-  {
-    throw new WebServiceException(message);
-  }
-
-  public WebServiceException()
-  {
-  }
-
-  public WebServiceException(String msg)
-  {
-    super(msg);
-  }
-
-  public WebServiceException(Throwable cause)
-  {
-    this.cause = cause;
-  }
-
-  public WebServiceException(String msg, Throwable cause)
-  {
-    super(msg);
-    this.cause = cause;
-  }
-
-  public Throwable getCause()
-  {
-    return this.cause;
-  }
-
-  public String getMessage()
-  {
-    if (super.getMessage() != null)
-      return super.getMessage();
-    if (this.cause != null) {
-      return this.cause.toString();
+    /**
+     * Holds the reference to the exception or error that caused
+     * this exception to be thrown.
+     */
+    private Throwable cause = null;
+    
+    
+	/**
+	 * 
+	 * @param message
+	 * @param t
+	 */
+    public static void handleMessageException(String message,Throwable t){
+    	throw new WebServiceException(message,t) ;
     }
-    return null;
-  }
+	/**
+	 * @param t
+	 * @param operation
+	 */
+	public static void handleMessageException(String message) {
+		throw new WebServiceException(message) ;
+	}
 
-  public String getMessage(int index)
-  {
-    if (index == 0) {
-      return super.getMessage();
+    /**
+     * Constructs a new <code>NestableRuntimeException</code> without specified
+     * detail message.
+     */
+    public WebServiceException() {
+        super();
     }
-    return this.delegate.getMessage(index);
-  }
 
-  public String[] getMessages()
-  {
-    return this.delegate.getMessages();
-  }
+    /**
+     * Constructs a new <code>WebServiceException</code> with specified
+     * detail message.
+     *
+     * @param msg the error message
+     */
+    public WebServiceException(String msg) {
+        super(msg);
+    }
 
-  public Throwable getThrowable(int index)
-  {
-    return this.delegate.getThrowable(index);
-  }
+    /**
+     * Constructs a new <code>WebServiceException</code> with specified
+     * nested <code>Throwable</code>.
+     *
+     * @param cause the exception or error that caused this exception to be
+     * thrown
+     */
+    public WebServiceException(Throwable cause) {
+        super();
+        this.cause = cause;
+    }
 
-  public int getThrowableCount()
-  {
-    return this.delegate.getThrowableCount();
-  }
+    /**
+     * Constructs a new <code>WebServiceException</code> with specified
+     * detail message and nested <code>Throwable</code>.
+     *
+     * @param msg    the error message
+     * @param cause  the exception or error that caused this exception to be
+     * thrown
+     */
+    public WebServiceException(String msg, Throwable cause) {
+        super(msg);
+        this.cause = cause;
+    }
 
-  public Throwable[] getThrowables()
-  {
-    return this.delegate.getThrowables();
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public Throwable getCause() {
+        return cause;
+    }
 
-  public int indexOfThrowable(Class type)
-  {
-    return this.delegate.indexOfThrowable(type, 0);
-  }
+    /**
+     * Returns the detail message string of this throwable. If it was
+     * created with a null message, returns the following:
+     * (cause==null ? null : cause.toString()).
+     *
+     * @return String message string of the throwable
+     */
+    public String getMessage() {
+        if (super.getMessage() != null) {
+            return super.getMessage();
+        } else if (cause != null) {
+            return cause.toString();
+        } else {
+            return null;
+        }
+    }
 
-  public int indexOfThrowable(Class type, int fromIndex)
-  {
-    return this.delegate.indexOfThrowable(type, fromIndex);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public String getMessage(int index) {
+        if (index == 0) {
+            return super.getMessage();
+        }
+        return delegate.getMessage(index);
+    }
 
-  public void printStackTrace()
-  {
-    this.delegate.printStackTrace();
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public String[] getMessages() {
+        return delegate.getMessages();
+    }
 
-  public void printStackTrace(PrintStream out)
-  {
-    this.delegate.printStackTrace(out);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public Throwable getThrowable(int index) {
+        return delegate.getThrowable(index);
+    }
 
-  public void printStackTrace(PrintWriter out)
-  {
-    this.delegate.printStackTrace(out);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public int getThrowableCount() {
+        return delegate.getThrowableCount();
+    }
 
-  public final void printPartialStackTrace(PrintWriter out)
-  {
-    super.printStackTrace(out);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public Throwable[] getThrowables() {
+        return delegate.getThrowables();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int indexOfThrowable(Class type) {
+        return delegate.indexOfThrowable(type, 0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int indexOfThrowable(Class type, int fromIndex) {
+        return delegate.indexOfThrowable(type, fromIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void printStackTrace() {
+        delegate.printStackTrace();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void printStackTrace(PrintStream out) {
+        delegate.printStackTrace(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void printStackTrace(PrintWriter out) {
+        delegate.printStackTrace(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public final void printPartialStackTrace(PrintWriter out) {
+        super.printStackTrace(out);
+    }
 }
